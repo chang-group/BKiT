@@ -7,8 +7,8 @@
     <meta name="author" content="">
     <link rel="icon" href="../../../../favicon.ico">
 
-    <title>OpenFold2</title>
-    <link rel="icon" href="Fig/OpenFold2_small.png" type="image/x-icon">
+    <title>BKit</title>
+    <link rel="icon" href="Fig/logo.png" type="image/x-icon">
 
     <!-- Bootstrap core CSS -->
     <link href="https://getbootstrap.com/docs/4.1/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -23,7 +23,7 @@
   <body>
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="https://github.com/lupoglaz/OpenFold2">GitHub</a>
+      <a class="navbar-brand" href="https://github.com/truzmeto/BKit">GitHub</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -34,16 +34,13 @@
                 <a class="nav-link" href="index.html">Home<span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="about.html">About<span class="sr-only"></span></a>
+              <a class="nav-link" href="MilestoneConstruction.html">Chapter 1<span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="iterativeSE3Transformer.html">Chapter 1<span class="sr-only"></span></a>
+              <a class="nav-link" href="SortingAndPCAProjections.html">Chapter 2<span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="protein.html">Chapter 2<span class="sr-only"></span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="msa.html">Chapter 3<span class="sr-only"></span></a>
+              <a class="nav-link" href="KineticsAndFreeEnergy.html">Chapter 3<span class="sr-only"></span></a>
             </li>
         </ul>
         </div>
@@ -51,27 +48,22 @@
     
 <main role="main" class="container-fluid">
     <div class="starter-template">
-        <img src="Fig/OpenFold2_mid.png" class="rounded mx-auto d-block float-center" alt="Logo">
-        <h1>OpenFold2</h1>
-        <p class="lead">Replicating AlphaFold2 in the dark</p>
+        <img src="Fig/logo.png" class="rounded mx-auto d-block float-center" alt="Logo">
+        <h1>BKit</h1>
+        <p class="lead">Accurate Free Energy and Kinetics Analysis</p>
     </div>
     <div class="container-fluid">
       <div class="row">
         <div class="col"></div>
         <div class="col">
           <h2>Introduction</h2>
-          <p>AlphaFold2 is a monumental step towards making biology an engineering discipline. Ability to predict protein structures with 
-          high accuracy and reliably finally gives humanity the keys to the living matter. We believe, that this algorithm is too important 
-          to be unavailable for modifications and improvements. </p>
-          <p>In this work we are replicating complete AlphaFold2 algorithm. However at the moment of writing this text only surface-level details are 
-          known about this algorithm, which make replication effort non-trivial. To overcome this challenge we use the dataset-driven tactics to 
-          build the complete model.</p>
-          <p>The key idea is to break the whole AlphaFold2 algorithm in several parts: <b>SE(3) equivariant part</b>, <b>MSA part</b>, <b>structural module</b>, 
-          possible <b>unsupervised pretraining</b>. We then design a dataset that examplifies the rules each part tries to capture during the training and build 
-          a model for this dataset.</p>
-          <p>This approach makes replicating complex composite models like AlphaFold2 more tractable. We also can explore failure modes of each part of the 
-          model without training it on the complete dataset of protein MSAs and structures.</p>
-          
+          <p>Transient states during ligand-protein binding/unbinding reveal the key atomistic interactions
+           that would affect drug pharmacokinetics. Investigation of transient states can help us to alter drugs'
+           residence time, Kon, Koff etc to achieve desired binding kinetics. Traditional drug design merely
+           focuses on bound-state which is not sufficient to predict drug binding/unbinding kinetic properties and
+           it may lead to failure of drug development. Here, we introduce a python toolkit for transient states
+           identification and binding free energy calculation to better understand ligand-protein interactions
+           during binding/unbinding.</p>          
         </div>
         <div class="col"></div>
       </div>
@@ -83,20 +75,20 @@
     <div class="row">
         <div class="col-lg-4">
           <img class="rounded-circle" src="Fig/SE3TransformerIcon.png" alt="Generic placeholder image" width="140" height="140">
-          <h2>Iterative SE(3) transformer</h2>
-          <p>Predicting particle coordinates using iterative se(3) transformer.</p>
-          <p><a class="btn btn-secondary" href="iterativeSE3Transformer.html" role="button">View &raquo;</a></p>
+          <h2>Milestone Construction</h2>
+          <p>Unbinding Path Construction.</p>
+          <p><a class="btn btn-secondary" href="MilestoneConstruction.html" role="button">View &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
           <img class="rounded-circle" src="Fig/Amino-acid.png" alt="Generic placeholder image" width="140" height="140">
-          <h2>Protein</h2>
-          <p>Predicting structure of a protein using sequence.</p>
+          <h2>SortingAndPCAProjections</h2>
+          <p>Sampling transitions with short MDs.</p>
           <p><a class="btn btn-secondary" href="protein.html" role="button">View &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
           <img class="rounded-circle" src="Fig/msa_icon.png" alt="Generic placeholder image" width="140" height="140">
-          <h2>MSA</h2>
-          <p>Predicting structures of proteins using MSA.
+          <h2>Kinetics And Free Energy</h2>
+          <p>Residence Time and Free Energy Calculation.
           <p><a class="btn btn-secondary" href="msa.html" role="button">View &raquo;</a></p>
         </div><!-- /.col-lg-4 -->
         <div class="col-lg-4">
