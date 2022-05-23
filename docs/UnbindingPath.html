@@ -67,9 +67,13 @@
         <div class="row">
             <div class="col-sm">
                 <h2>Introduction</h2> 
-                <p>Transition path construction is an essential initial step in this pipline. Here, we 
-                express dissociation(<b>Figure 1</b>)</p> pathway in a compressed 3D PCA space using selected 
-                all atom positions of protein-ligand complex MD trajectory. 
+                <p>Important elements that contribute to protein ligand dissociation free energy are
+                intra and intermolecular interactions, conformational rearrengments and concentric motions.
+                Reaction coordinates such as center of mass separation distance $R_{CM}$ or fraction of native 
+                contacts are incapable of capturing these effects. Thus we use all atom positions, compressed with PCA
+                to preserve variance, and use reduced dimention to build unbinding path. Unbinding transition path
+                construction is an essential initial step in this pipline. Here, we represent every frame of
+                MD trajectory in a reduced 3D PCA space(<b>Figure 1</b>)</p>. 
             </div>
             <div class="col-sm">
                 <img src="Fig/PL4_OH_movie.gif" class="rounded mx-auto d-block float-center" alt="" width=60%>
@@ -85,14 +89,15 @@
                 (<b>Figure 2</b>).</p>                               
             </div>
             <div class="col">
-                <img src="Fig/se3_dataset_anim.gif" mode=loop class="rounded mx-auto d-block float-center" alt="Dataset sample" width=50%>
-                <h6>Figure 2: And example of one sample from the dataset.</h6>
+                <img src="Fig/PL13D_unbinding_raw.png" class="rounded mx-auto d-block float-center" alt="Dataset sample" width=80%>
+                <h6>Figure 2: Dissociation trajectories projected into PCA space illustrated, where from dark blue to bright yellow transformation
+                represents unbinding. </h6>
             </div>
             
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>SE(3) transformer</h2>
+                <h2>Smooth path with simple moving average</h2>
                 Approaching this problem we looked at sevaral papers, that developed SE(3) equivariant models: 
                 <ul>
                 <li>Cormorant : Covariant Molecular Neural Networks <b>[1]</b></li>
@@ -102,12 +107,6 @@
                 <p>The Cormorant networks seemed to fit perfectly for this problem and it also was published before the recent CASP experiment, however 
                 authors noted that the training procedure was unstable after 5-6 layers. Meanwhile according to DeepMind presentation AlphaFold2 has 
                 ~50 layers in the structural part of the model.</p>
-                <p>The tensor field networks and by extention equivariant attention networks did not have the same drawback as Cormorant networks. 
-                    And although equivariant attention networks was published after CASP14 started, it seemed like a natural extention of the tensor field 
-                    networks and we think DeepMind group probably independently discovered this idea.</p>
-                <p>Figure 3 shows the workflow of SE(3) transformer. The key step here is the computation of an equivariant basis consisting of spherical 
-                    harmonics with the radial part. The drawback of this work is that authors assumed that the coordinates of the nodes will stay constant 
-                    during the forward pass of the model and made the basis computation non-differentiable. However this can be easily fixed.
                 </p>
             </div>
             <div class="col">
@@ -118,21 +117,7 @@
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>Making SE(3) transformer fully differentiable</h2>
-                <p>When coordinates of nodes are updated we have to recompute spherical harmonics and reform the basis out of them using 
-                Clebsh-Gordan coefficients. Because C-G coefficients do not depend on the coordinates, we focus on the evaluation of 
-                spherical harmonics. In the original implementation of SE(3) transformer they are calculated using recursive formula, 
-                however we think it might result in performance loss or numerical instability later on. </p>
-                The implementations of tensor field networks and by extention SE(3) transformer use the tesseral spherical harmonics:
-                $$Y_{lm}(\theta, \phi) = \begin{cases} \\
-                (-1)^m \sqrt{2} \sqrt{\frac{2l+1}{4\pi}\frac{ (l-|m|)!}{(l+|m|)!}} P_l^{|m|}(cos(\theta)) sin(|m|\phi), &m<0 \\
-                \sqrt{\frac{2l+1}{4\pi}} P_l^{m}(cos(\theta)), &m=0 \\
-                (-1)^m \sqrt{2} \sqrt{\frac{2l+1}{4\pi}\frac{ (l-m)!}{(l+m)!}} P_l^{m}(cos(\theta)) sin(m\phi), &m>0 \\
-                \end{cases}
-                $$
-                where $P^m_l$ is a legendre polynomial and the angles $\theta$ and $\phi$ come from transforming diffence between nodes 
-                coordinates into spherical coordinate system:
-                $$P^m_l(x) = (-1)^m 2^l (1-x^2)^{\frac{m}{2}} \sum_{k=m}^l \frac{k!}{(k-m)!} x^{k-m} \left(\begin{array}\\l\\k\end{array}\right)\left(\array{ \frac{l+k-1}{2}\\l}\right)$$
+                <h2>Random path generation with KDTree</h2>
                 <p>We can rewrite tesseral spherical harmonics in the following way:
                 $$Y_{lm}(\theta, \phi) = \sum_{k=m}^{l} B(k,l,m) \left(1-cos^2(\theta)\right)^{\frac{m}{2}} cos^{k-m}(\theta) sin(m\phi)$$
                 where coefficients $B(k,l,m)$ do not depend on the angles $\theta$ and $\phi$ and can be precomputed before training. </p>
@@ -149,56 +134,17 @@
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>Model</h2>
+                <h2>Removing sharp corners</h2>
                 <p>Now, with fully differentiable basic building blocks we can finally build a model, that will predict coordinates of particles 10 timesteps 
                 ito the future. However, we have to take into accout that SE(3) transformer deals with vector fields and node coordinates are a set of three
                 scalar fields. Therefor we instead predict displacement of each node compared to the previous iteration of the model.</p>
-                <p><b>Figure 5</b> shows the model architecture. Each transformer block predicts the displacement of the particles, then this displacement 
-                is applied to the coordinates and the procedure is repeated for 4 iterations.</p>
-            </div>
+               </div>
             <div class="col">
                 <img src="Fig/SE3TransformerModel.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
                 <h5>Figure 5: Iterative SE(3) transformer model.</h5>
             </div>
         </div>
-        <div class="row">
-            <div class="col-sm">
-                <br><br><br>
-                <h2>Results</h2>
-                After training for 100 epochs we have the following result:
-                <table class="table">
-                    <thead>
-                      <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Train</th>
-                        <th scope="col">Test</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <th scope="row">Epoch 0</th>
-                        <td>1.76</td>
-                        <td>7.17</td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Epoch 100</th>
-                        <td>0.063</td>
-                        <td>0.037</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <br><br><br>
-                  <h2>Citations</h2>
-                    <ul class="list-unstyled">
-                    <li>1. Anderson, Brandon, Truong-Son Hy, and Risi Kondor. "Cormorant: Covariant molecular neural networks." arXiv preprint arXiv:1906.04015 (2019)</li>
-                    <li>2. Thomas, Nathaniel, et al. "Tensor field networks: Rotation-and translation-equivariant neural networks for 3d point clouds." arXiv preprint arXiv:1802.08219 (2018)</li>
-                    <li>3. Fuchs, Fabian B., et al. "SE (3)-transformers: 3D roto-translation equivariant attention networks." arXiv preprint arXiv:2006.10503 (2020) </li>
-                    </ul>
-            </div>
-            <div class="col">
-            </div>
-        </div>
-
+     
     </div><!-- /.container -->
 </main>
 
