@@ -1,11 +1,9 @@
-# BKit
 
 <p align="center">
   <img src="docs/Fig/logo.png">
 </p>
 
-Protein-ligand dissociation path thermodynamics and kinetics analysis
-
+Protein-ligand dissociation thermodynamics and kinetics toolkit
 
 ## Dependancies
 - `python` 3.6 >
@@ -22,3 +20,7 @@ Clone the repository:
 then run the following command:
 
 *python setup.py install*
+
+## Documentaion 
+
+https://truzmeto.github.io/BKit/
