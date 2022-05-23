@@ -34,25 +34,27 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-  
           <div class="collapse navbar-collapse" id="navbarsExampleDefault">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.html">Home<span class="sr-only"></span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="about.html">About<span class="sr-only"></span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="iterativeSE3Transformer.html">Chapter 1<span class="sr-only"></span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="protein.html">Chapter 2<span class="sr-only"></span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="msa.html">Chapter 3<span class="sr-only"></span></a>
-                </li>
-            </ul>
+          <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                  <a class="nav-link" href="index.html">Home<span class="sr-only"></span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="UnbindingPath.html">Chapter 1<span class="sr-only"></span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="Milestones.html">Chapter 2<span class="sr-only"></span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="ShortMDs.html">Chapter 3<span class="sr-only"></span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="Kinetics.html">Chapter 4<span class="sr-only"></span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="FreeEnergy.html">Chapter 5<span class="sr-only"></span></a>
+              </li>          
+          </ul>
           </div>
       </nav>
     
@@ -64,32 +66,27 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm">
-                <h2>Introduction</h2>
-                <p>DeepMind mentioned in their presentation that updates in the structural part (<b>Figure 1</b>) of AlphaFold2 were SE(3) equivariant:
-                if inputs of each transformer block are rotated and translated, the outputs are rotated and translated accordingly. 
-                This is an essential property of the model, because it should not depend on the particular orientation of the molecule.
-                In this chapter we design a dataset, that requires SE(3) equivariance of the model in order to generalize to the test set.</p>
-                                
+                <h2>Introduction</h2> 
+                <p>Transition path construction is an essential initial step in this pipline. Here, we 
+                express dissociation(<b>Figure 1</b>)</p> pathway in a compressed 3D PCA space using selected 
+                all atom positions of protein-ligand complex MD trajectory. 
             </div>
             <div class="col-sm">
-                <img src="Fig/AlphaFold2_se3part.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
-                <h5>Figure 1: SE(3) equivariant part of AlphaFold2.</h5>
-            </div>
-            
+                <img src="Fig/PL4_OH_movie.gif" class="rounded mx-auto d-block float-center" alt="" width=60%>
+                <h6>Figure 1: Unbinding transiton visualization for CDK8-PL1 complex.</h6>
+            </div>            
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>Dataset</h2>
-                <p>Because we want to test model equivariance and design iterative architecture, we decided to use particle dynamics dataset for this purpose.
-                    First, we define the interaction potential between N particles and run T timesteps of ordinary Newtonian dynamics (<b>Figure 2</b>). We repeat 
-                    this procedure with different number of particles and time lengths.</p>
-                <p>Afterwards, we slice these simulations into blocks of blocks of 10 timesteps. The inputs to the model are coordinates and velocities
-                    of each particle in the beginning of the block and the targets are the coordinates of the particles at the end of the block.</p>
-
+                <h2>MD Trajectories to Principal Components </h2>
+                <p> Here we select backbone $C_{\alpha}$ atom positions of protein and all heavy atoms of ligand to use as
+                our collective variables. 3N number of variables are linearly transformed into PCA space and we only keep 3 components
+                that preserve maximal amount of variance.
+                (<b>Figure 2</b>).</p>                               
             </div>
             <div class="col">
-                <img src="Fig/se3_dataset_anim.gif" class="rounded mx-auto d-block float-center" alt="Dataset sample" width=50%>
-                <h5>Figure 2: And example of one sample from the dataset.</h5>
+                <img src="Fig/se3_dataset_anim.gif" mode=loop class="rounded mx-auto d-block float-center" alt="Dataset sample" width=50%>
+                <h6>Figure 2: And example of one sample from the dataset.</h6>
             </div>
             
         </div>
@@ -115,7 +112,7 @@
             </div>
             <div class="col">
                 <img src="Fig/SE3Transformer.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
-                <h5>Figure 3. Schematic workflow of SE(3) transformer.</h5>
+                <h6>Figure 3. Schematic workflow of SE(3) transformer.</h6>
             </div>
             
         </div>

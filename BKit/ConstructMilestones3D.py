@@ -32,36 +32,7 @@ def rotation_matrix(v1,v2):
         M = ddt + cos_angle * (eye - ddt) + sin_angle * skew
 
     return M
-
-def pathpatch_2d_to_3d(pathpatch, delta, normal = 'z'):
-    """
-    Transforms a 2D Patch to a 3D patch using the given normal vector.
-
-    The patch is projected into they XY plane, rotated about the origin
-    and finally translated by z.
-    
-    Borrowed from stack overflow
-    
-    """
-    if type(normal) is str: #Translate strings to normal vectors
-        index = "xyz".index(normal)
-        normal = np.roll((1,0,0), index)
-
-    path = pathpatch.get_path() #Get the path and the associated transform
-    trans = pathpatch.get_patch_transform()
-
-    path = trans.transform_path(path) #Apply the transform
-
-    pathpatch.__class__ = art3d.PathPatch3D #Change the class
-    pathpatch._code3d = path.codes #Copy the codes
-    pathpatch._facecolor3d = pathpatch.get_facecolor #Get the face color    
-
-    verts = path.vertices #Get the vertices in 2D
-    M = rotation_matrix(normal, (0, 0, 1)) #Get the rotation matrix
-
-    pathpatch._segment3d = np.array([np.dot(M, (x, y, 0)) for x, y in verts])
-    pathpatch._segment3d += delta
-    
+ 
 
 class ConstructMilestones3D:
    
@@ -258,6 +229,102 @@ class ConstructMilestones3D:
 
         return datS
 
+
+
+class SortFrames:
+   
+    def __init__(self, dat, dr, dz):
+        """
+        
+        """
+        self.dat = dat
+        self.dr = dr
+        self.dz = dz
+                
+          
+    def SelFrames(self, ml_xyz, M):
+        """
+        Selects frames on a disk surface (both side) based on distances:
+            dz - along disk normal
+            dr - along radial direction
+            
+        """
+        data = np.copy(self.dat) - ml_xyz                     # translate
+        a = np.dot(data, M)                                   # rotate
+        a = a*a; dz = self.dz*self.dz; dr = self.dr*self.dr   # square        
+        mask = (a[:,2] <= dz) & (a[:,1] + a[:,0] <= dr)
+        indxs = np.where(mask)[0]
+
+        return indxs
+
+    def SelCells(self, ml_xyzL, ml_xyzM, ml_xyzR, Ml, Mm, Mr):
+        """
+        Selects frames between two neighbouring milestone planes
+        (aligned to milestone disk) and also sorts based on middle disk raduis:
+        dz - along disk normal
+        dr - along radial direction
+            
+        """
+        dataL = np.copy(self.dat) - ml_xyzL   # translate left disk and dat with it
+        aL = np.dot(dataL, Ml)                # rotate
+        
+        dataM = np.copy(self.dat) - ml_xyzL   
+        aM = np.dot(dataM, Mm)           
+              
+        dataR = np.copy(self.dat) - ml_xyzR   # translate ...
+        aR = np.dot(dataR, Mr)                # rotate
+               
+        maskZ = (aL[:,2] >= 0.0) & (aR[:,2] < 0.0)      # choose all points between plances 
+        maskR = aM[:,0]**2 + aM[:,1]**2 <= self.dr**2   # choose points within mid disk dr
+        mask = maskZ * maskR                            # combine masks     
+        
+        indxs = np.where(mask)[0]
+        
+        return indxs
+    
+    def SortAllPoints(self, normals, normalsMid, pathP, pathMid, SortMethod='surface'):
+        """
+
+        """
+
+        n_disks = normals.shape[0]
+        n_cells = normalsMid.shape[0]
+        z_hat = (0, 0, 1)             # unit vecor along z
+        datS = np.zeros((1,5))        # empty df for appending
+
+        nf = self.dat.shape[0] 
+        CellIndx = np.ones(nf, dtype=int)*1000 # Index assigned to regions outside of the cells
+
+
+        if SortMethod == 'surface':
+            for i in range(n_disks):
+                M = rotation_matrix(normals[i], z_hat) 
+                frame_ids = self.SelFrames(pathP[i], M)
+                diskID = np.ones_like(frame_ids, dtype=int)*i
+                datS = np.append(datS, np.column_stack((self.dat[frame_ids], diskID, frame_ids)), axis=0)
+            datS = datS[1:]
+
+        elif SortMethod == 'middle':
+            for i in range(n_cells):
+                Ml = rotation_matrix(normals[i], z_hat) 
+                Mm = rotation_matrix(normalsMid[i], z_hat)
+                Mr = rotation_matrix(normals[i+1], z_hat)
+                frame_ids = self.SelCells(pathP[i], pathMid[i], pathP[i+1], Ml, Mm, Mr)
+                midIDs = np.ones_like(frame_ids, dtype=int)*i
+                datS = np.append(datS, np.column_stack((self.dat[frame_ids], midIDs, frame_ids)), axis=0)
+                CellIndx[frame_ids] = i
+
+            datS = datS[1:]
+
+        else:
+            print('Specify one of the available methods to sort data points!')
+
+        return datS, CellIndx
+
+
+
+
+    
 if __name__=='__main__':
        
     #from SmoothPath import BuildReactPath, Generate3Data

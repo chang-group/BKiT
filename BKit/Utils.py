@@ -3,7 +3,7 @@ import os
 import pytraj as pt
 import numpy as np
 import tqdm
-#from ConstructMilestones3D import rotation_matrix, pathpatch_2d_to_3d
+from .ConstructMilestones3D import rotation_matrix
 
 # for plotting
 import matplotlib.pyplot as plt
@@ -66,6 +66,38 @@ def LoadTrajs(traj_path, top_path, refPDB_path, mask_selec, mask_align=None):
     print('Total number of selected atoms -- ' , new_frames.shape[1]//3)
 
     return new_frames, refframe, traj
+
+
+def pathpatch_2d_to_3d(pathpatch, delta, normal = 'z'):
+    """
+    Transforms a 2D Patch to a 3D patch using the given normal vector.
+
+    The patch is projected into they XY plane, rotated about the origin
+    and finally translated by z.
+    
+    Borrowed from stack overflow
+    
+    """
+    if type(normal) is str: #Translate strings to normal vectors
+        index = "xyz".index(normal)
+        normal = np.roll((1,0,0), index)
+
+    path = pathpatch.get_path() #Get the path and the associated transform
+    trans = pathpatch.get_patch_transform()
+
+    path = trans.transform_path(path) #Apply the transform
+
+    pathpatch.__class__ = art3d.PathPatch3D #Change the class
+    pathpatch._code3d = path.codes #Copy the codes
+    pathpatch._facecolor3d = pathpatch.get_facecolor #Get the face color    
+
+    verts = path.vertices #Get the vertices in 2D
+    M = rotation_matrix(normal, (0, 0, 1)) #Get the rotation matrix
+
+    pathpatch._segment3d = np.array([np.dot(M, (x, y, 0)) for x, y in verts])
+    pathpatch._segment3d += delta
+
+
 
 
 def PlotSelected(dat_sel, dr, pathP, normals, yz_pad, figsize=[8,6]):
