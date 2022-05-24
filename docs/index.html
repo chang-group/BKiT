@@ -18,6 +18,12 @@
 
     <script src="js/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
+	<script type="text/x-mathjax-config">
+        MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+    <script type="text/javascript"
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
   </head>
 
   <body>
@@ -65,7 +71,7 @@
           <h2>Introduction</h2>
           <p>Transient states during ligand-protein binding/unbinding reveal the key atomistic interactions
            that would affect drug pharmacokinetics. Investigation of transient states can help us to alter drugs'
-           residence time, Kon, Koff etc to achieve desired binding kinetics. Traditional drug design merely
+           residence time, $K_{on}$ , $K_{off}$ etc to achieve desired binding kinetics. Traditional drug design merely
            focuses on bound-state which is not sufficient to predict drug binding/unbinding kinetic properties and
            it may lead to failure of drug development. Here, we introduce a python toolkit for transient states
            identification and binding free energy calculation to better understand ligand-protein interactions
