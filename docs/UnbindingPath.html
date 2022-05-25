@@ -83,68 +83,63 @@
         <div class="row">
             <div class="col-sm">
                 <h2>MD Trajectories to Principal Components </h2>
-                <p> Here we select backbone $C_{\alpha}$ atom positions of protein and all heavy atoms of ligand to use as
-                our collective variables. 3N number of variables are linearly transformed into PCA space and we only keep 3 components
-                that preserve maximal amount of variance.
+                <p> Here we select backbone $C_{\alpha}$ atom positions of protein and all heavy
+                atoms of ligand to use as our collective variables. 3N number of variables are linearly
+                transformed into PCA space and we only keep 3 components preserving maximum variance.
                 (<b>Figure 2</b>).</p>                               
             </div>
             <div class="col">
                 <img src="Fig/PL13D_unbinding_raw.png" class="rounded mx-auto d-block float-center" alt="Dataset sample" width=80%>
-                <h6>Figure 2: Dissociation trajectories projected into PCA space illustrated, where from dark blue to bright yellow transformation
-                represents unbinding. </h6>
+                <h6>Figure 2: Dissociation trajectories projected into PCA space illustrated, where from
+                dark blue to bright yellow transformation assumes unbinding. </h6>
             </div>
             
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>Smooth path with simple moving average</h2>
-                Approaching this problem we looked at sevaral papers, that developed SE(3) equivariant models: 
-                <ul>
-                <li>Cormorant : Covariant Molecular Neural Networks <b>[1]</b></li>
-                <li>Tensor field networks: Rotation- and translation-equivariant neural networks for 3D point clouds <b>[2]</b></li>
-                <li>Equivariant Attention Networks <b>[3]</b></li>
-                </ul>
-                <p>The Cormorant networks seemed to fit perfectly for this problem and it also was published before the recent CASP experiment, however 
-                authors noted that the training procedure was unstable after 5-6 layers. Meanwhile according to DeepMind presentation AlphaFold2 has 
-                ~50 layers in the structural part of the model.</p>
-                </p>
+                <h2>Smooth Unbinding Path</h2>
+                <p>Unbinding path is constructed assuming trajectory indecies (time frame) correspond to distinct protein-ligand
+                conformation, and represent continuous dissociation. In this, we use moving average across window of frames,
+                or points in PCA space to get mean path. Parameters are window size and stride. Window size is number of points
+                considered for taking the average, and stride dictates number of steps to skip between consecutive averages. We set 
+                $stride = w_{size}/5$ as default value, but it can be changed. Larger the window size smoother dissociation
+                path we get.</p>
+                <p>Next we apply another algorithm to smooth the unbinding path. In this, we visit every point and check bond angle
+                it makes with neirest neighbour points in sequence. We systematically remove points if the angle is less than the
+                threshold $\cos(\alpha) = - 0.1$. In order to set equal distance between milestones, we apply interpolation after
+                sharp corners are discarded. (<b>Figure 4</b>) This step is essential preparation for milestone construction that is discussed in
+                the next chapter. </p>
+                
             </div>
             <div class="col">
-                <img src="Fig/SE3Transformer.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
-                <h6>Figure 3. Schematic workflow of SE(3) transformer.</h6>
+                <img src="Fig/PL13D_path.png" class="rounded mx-auto d-block float-center" alt="" width=80%>
+                <h6>Figure 3. Smooth mean path constructed for CDK8-PL1 complex dissociation trajectory in PCA space with
+                $w_{size}=550$ and $stride=110$. Crude mean path is constructed with twice smaller $w_{size}$ and $stride$
+                to show how actual path looks like without smoothing steps. </h6>
             </div>
             
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>Random path generation with KDTree</h2>
-                <p>We can rewrite tesseral spherical harmonics in the following way:
-                $$Y_{lm}(\theta, \phi) = \sum_{k=m}^{l} B(k,l,m) \left(1-cos^2(\theta)\right)^{\frac{m}{2}} cos^{k-m}(\theta) sin(m\phi)$$
-                where coefficients $B(k,l,m)$ do not depend on the angles $\theta$ and $\phi$ and can be precomputed before training. </p>
-                <p>To compute the harmonics with precomputed coefficients $B$ we compute tensors that depend on the angles, multiply them by the coefficients $B$
-                    and sum over the index $k$ (<b>Figure 4</b>).</p>
+                <h2>KDTree based path generation</h2>
+                <p> Due to complex nature of interactions molecular dynamics dissociation trajectory often contains backward motion,
+                where frame indecies inversly correlate with dissociation reaction coordinate. Thus, frame indecies fail to
+                represent dissociation as continuous variable. We provide a robust approach that constructes unbinding path based on
+                local distance based average using KDTree algorithm, which facilitates fast neighbour search. This approach is helpful
+                when there are multiple transition pathways. 
+                 </p>
             </div>
             <div class="col">
                 <br><br><br><br>
-                <img src="Fig/SphericalHarmonics.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
-                <h5>Figure 4: Computing sherical harmonics with the precomputed coefficients $B(k,l,m)$.</h5>
+                <img src="Fig/PL13D_path.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
+                <h6>Figure 4. Random mean path constructed for CDK8-PL1 complex dissociation trajectory in PCA space with
+                .... Crude mean path is constructed with twice smaller $w_{size}$ and $stride$
+                to show how actual path looks like without smoothing steps.</h6>
                 <br><br>
             </div>
             
         </div>
-        <div class="row">
-            <div class="col-sm">
-                <h2>Removing sharp corners</h2>
-                <p>Now, with fully differentiable basic building blocks we can finally build a model, that will predict coordinates of particles 10 timesteps 
-                ito the future. However, we have to take into accout that SE(3) transformer deals with vector fields and node coordinates are a set of three
-                scalar fields. Therefor we instead predict displacement of each node compared to the previous iteration of the model.</p>
-               </div>
-            <div class="col">
-                <img src="Fig/SE3TransformerModel.png" class="rounded mx-auto d-block float-center" alt="Training process" width=80%>
-                <h5>Figure 5: Iterative SE(3) transformer model.</h5>
-            </div>
-        </div>
-     
+             
     </div><!-- /.container -->
 </main>
 
