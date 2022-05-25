@@ -71,7 +71,7 @@
                 intra and intermolecular interactions, conformational rearrengments and concentric motions.
                 Reaction coordinates such as center of mass separation distance $R_{CM}$ or fraction of native 
                 contacts are incapable of capturing these effects. Thus we use all atom positions, compressed with PCA
-                to preserve variance, and use reduced dimention to build unbinding path. Unbinding transition path
+                to preserve variance, and use reduced dimension to build unbinding path. Unbinding transition path
                 construction is an essential initial step in this pipline. Here, we represent every frame of
                 MD trajectory in a reduced 3D PCA space(<b>Figure 1</b>)</p>. 
             </div>
@@ -83,9 +83,13 @@
         <div class="row">
             <div class="col-sm">
                 <h2>MD Trajectories to Principal Components </h2>
-                <p> Here we select backbone $C_{\alpha}$ atom positions of protein and all heavy
-                atoms of ligand to use as our collective variables. 3N number of variables are linearly
-                transformed into PCA space and we only keep 3 components preserving maximum variance.
+                <p> Molecular dynamics (MD) unbinding trajectory contains information about how all atoms of the 
+                protein ligand complex transition from bound to unbound state. This information can be used to get 
+                a approximate transition path. Using all atom positions is computation intensive, and some sort of coarse
+                graining usually helps to speed up the calculation. Here we select backbone $C_{\alpha}$ atom positions
+                of protein and all heavy atoms (non-hydrogen) of ligand to use as our collective variables. 3N number of
+                variables are linearly transformed into PCA space. We keep only two/three components preserving maximum
+                variance.
                 (<b>Figure 2</b>).</p>                               
             </div>
             <div class="col">
@@ -107,26 +111,27 @@
                 <p>Next we apply another algorithm to smooth the unbinding path. In this, we visit every point and check bond angle
                 it makes with neirest neighbour points in sequence. We systematically remove points if the angle is less than the
                 threshold $\cos(\alpha) = - 0.1$. In order to set equal distance between milestones, we apply interpolation after
-                sharp corners are discarded. (<b>Figure 4</b>) This step is essential preparation for milestone construction that is discussed in
+                sharp corners are discarded. (<b>Figure 3</b>) This step is essential preparation for milestone construction that is discussed in
                 the next chapter. </p>
                 
             </div>
             <div class="col">
                 <img src="Fig/PL13D_path.png" class="rounded mx-auto d-block float-center" alt="" width=80%>
                 <h6>Figure 3. Smooth mean path constructed for CDK8-PL1 complex dissociation trajectory in PCA space with
-                $w_{size}=550$ and $stride=110$. Crude mean path is constructed with twice smaller $w_{size}$ and $stride$
-                to show how actual path looks like without smoothing steps. </h6>
+                $w_{size}=550$ and $stride=110$. Crude mean path with twice smaller $w_{size}$ and $stride$ is 
+                illustrated in without smoothing steps. </h6>
             </div>
             
         </div>
         <div class="row">
             <div class="col-sm">
-                <h2>KDTree based path generation</h2>
+                <h2>KDTree Based Average Path</h2>
                 <p> Due to complex nature of interactions molecular dynamics dissociation trajectory often contains backward motion,
                 where frame indecies inversly correlate with dissociation reaction coordinate. Thus, frame indecies fail to
                 represent dissociation as continuous variable. We provide a robust approach that constructes unbinding path based on
-                local distance based average using KDTree algorithm, which facilitates fast neighbour search. This approach is helpful
-                when there are multiple transition pathways. 
+                local distance average using KDTree algorithm, which facilitates fast neighbour search. In this we use previously constructed
+                mean path as reference and re-evaluate every point by calculating k-neirest neighbour average on original data points.
+                as shown in <b>Figure 3</b>, black color. We restrict neighbourhood size to disc radius. This approach is also helpful when there are multiple transition pathways. 
                  </p>
             </div>
         </div>

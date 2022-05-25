@@ -43,13 +43,13 @@ class BuildSmoothMeanPath:
          points = self.rm_sharp(path)
          return points
 
-    def GetPathKD(self, rad):
+    def GetPathKD(self, rad, w_size, stride):
         """
         Construct path based on local neighbourhood distance
         """
                 
         tree = KDTree(self.dat, leaf_size = 10) 
-        mean_path = self.roll_ave( self.w_size, stride=self.stride)
+        mean_path = self.roll_ave( w_size, stride=stride)
         n_p = mean_path.shape[0]
 
         points = []
