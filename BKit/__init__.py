@@ -3,7 +3,6 @@ from .Utils import LoadTrajs
 from .Utils import PlotSelected
 from .Utils import pathpatch_2d_to_3d
 from .SmoothPath import BuildSmoothMeanPath
-from .SmoothPath import BuildReactPath
 from .InterpolateCurve import InterpolatePath
 from .ConstructMilestones3D import rotation_matrix
 from .ConstructMilestones3D import ConstructMilestones3D
