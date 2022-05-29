@@ -67,13 +67,15 @@
         <div class="row">
             <div class="col-sm">
                 <h2>Introduction</h2> 
-                <p>Important elements that contribute to protein ligand dissociation free energy are
+                <p>
+                Important elements that contribute to protein ligand dissociation free energy are
                 intra and intermolecular interactions, conformational rearrengments and concentric motions.
-                Reaction coordinates such as center of mass separation distance $R_{CM}$ or fraction of native 
-                contacts are incapable of capturing these effects. Thus we use all atom positions, compressed with PCA
-                to preserve variance, and use reduced dimension to build unbinding path. Unbinding transition path
-                construction is an essential initial step in this pipline. Here, we represent every frame of
-                MD trajectory in a reduced 3D PCA space(<b>Figure 1</b>)</p>. 
+                Coarse reaction coordinates are incapable of capturing these effects. On the other hand, using all
+                atom positions is computationally expansive and hard to visualize. Thus we employ a method 
+                that uses selected atom positions compressed with PCA to preserve variance. Using this reduced
+                dimension we build dissociation path, which is essential initial step. In a reduced space every
+                frame of MD trajectory (<b>Figure 1</b>) is represented as a point (<b>Figure 2</b>).
+                </p> 
             </div>
             <div class="col-sm">
                 <img src="Fig/PL1.gif" mode=loop class="rounded mx-auto d-block float-center" alt="" width=60%>
@@ -85,12 +87,10 @@
                 <h2>MD Trajectories to Principal Components </h2>
                 <p> Molecular dynamics (MD) unbinding trajectory contains information about how all atoms of the 
                 protein ligand complex transition from bound to unbound state. This information can be used to get 
-                a approximate transition path. Using all atom positions is computation intensive, and some sort of coarse
-                graining usually helps to speed up the calculation. Here we select backbone $C_{\alpha}$ atom positions
-                of protein and all heavy atoms (non-hydrogen) of ligand to use as our collective variables. 3N number of
-                variables are linearly transformed into PCA space. We keep only two/three components preserving maximum
-                variance.
-                (<b>Figure 2</b>).</p>                               
+                an approximate transition path in a PCA space. Here we select backbone $C_{\alpha}$ atom positions
+                of protein and all heavy atoms (non-hydrogen) of ligand to use as our collective variables. 3N-6 number
+                of variables are linearly transformed into PCA space. We keep only two/three components preserving maximum
+                variance and proceed to building dissociation path in a reduced PCA space. (<b>Figure 2</b>).</p>                               
             </div>
             <div class="col">
                 <img src="Fig/PL13D_unbinding_raw.png" class="rounded mx-auto d-block float-center" alt="Dataset sample" width=80%>
@@ -102,18 +102,21 @@
         <div class="row">
             <div class="col-sm">
                 <h2>Smooth Unbinding Path</h2>
-                <p>Unbinding path is constructed assuming trajectory indecies (time frame) correspond to distinct protein-ligand
+                <p>
+                Unbinding path is constructed assuming trajectory indecies (time frame) correspond to distinct protein-ligand
                 conformation, and represent continuous dissociation. In this, we use moving average across window of frames,
                 or points in PCA space to get mean path. Parameters are window size and stride. Window size is number of points
                 considered for taking the average, and stride dictates number of steps to skip between consecutive averages. We set 
                 $stride = w_{size}/5$ as default value, but it can be changed. Larger the window size smoother dissociation
-                path we get.</p>
-                <p>Next we apply another algorithm to smooth the unbinding path. In this, we visit every point and check bond angle
+                path we get.
+                </p>
+                <p>
+                Next we apply another algorithm to smooth the unbinding path. In this, we visit every point and check bond angle
                 it makes with neirest neighbour points in sequence. We systematically remove points if the angle is less than the
                 threshold $\cos(\alpha) = - 0.1$. In order to set equal distance between milestones, we apply interpolation after
                 sharp corners are discarded. (<b>Figure 3</b>) This step is essential preparation for milestone construction that is discussed in
-                the next chapter. </p>
-                
+                the next chapter. 
+                </p>                
             </div>
             <div class="col">
                 <img src="Fig/PL13D_path.png" class="rounded mx-auto d-block float-center" alt="" width=80%>

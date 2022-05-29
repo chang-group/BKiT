@@ -66,11 +66,21 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-sm">
-                <h2>Introduction</h2>
-                <p>Here we break previously constructed dissociation path into multiple states using discs
-                in a 3D-PCA space. We assign an index to each disc in an increasing order from bound to unbound state, which we
-                call <b>unbinding index</b>. </p>
-                                
+                <h2>Disks as Milestones</h2>
+                <p>
+                Here we break previously constructed dissociation path into multiple states using disks
+                in a 3D-PCA space. A region between two disks represent different states, which takes 
+                roughly cylindrical shape. Disks act as barriers separating different states. We assign an
+                index to each disc in an increasing order from bound to unbound state, which we call
+                <b>unbinding index</b>.
+                </p>
+                <p>
+                We simply use 3D unit vector to represent a disk with radius as a parameter. Initially, this vectors
+                are connection vectors between points of previously constructed mean dissociation path. Then, in order to
+                avoid overlaps between the disks we apply mean field optimization to all vectors.
+                
+                </p>
+                                                
             </div>
             <div class="col-sm">
                 <img src="Fig/AlphaFold2_se3part.png" class="rounded mx-auto d-block float-center" alt="lala" width=80%>
