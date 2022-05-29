@@ -125,9 +125,7 @@ plt.savefig(FIG_SAVE + complex_name + '3D_PCA.png')
 plt.show()
 ```
 
-
-    Canvas(toolbar=Toolbar(toolitems=[('Home', 'Reset original view', 'home', 'home'), ('Back', 'Back to previous …
-
+![png](Figure1.png)
 
 ## Construct 3D Path
 
@@ -171,8 +169,8 @@ plt.savefig(FIG_SAVE + complex_name + '3D_path.png')
 plt.show()
 ```
 
+![png](Figure2.png)
 
-    Canvas(toolbar=Toolbar(toolitems=[('Home', 'Reset original view', 'home', 'home'), ('Back', 'Back to previous …
 
 
 ## Now lets break into states with barriers
@@ -237,8 +235,8 @@ plt.show()
 
 ```
 
+![png](Figure3.png)
 
-    Canvas(toolbar=Toolbar(toolitems=[('Home', 'Reset original view', 'home', 'home'), ('Back', 'Back to previous …
 
 
 ### Select points between disks
@@ -256,14 +254,8 @@ PlotSelected(datMid, dr, pathP, normals, yz_pad, figsize=[8,6])
 plt.show()
 ```
 
+![png](Figure4.png)
 
-    Canvas(toolbar=Toolbar(toolitems=[('Home', 'Reset original view', 'home', 'home'), ('Back', 'Back to previous …
-
-
-
-```python
-
-```
 
 
 ```python
