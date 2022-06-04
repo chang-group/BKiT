@@ -6,7 +6,7 @@
 <p align="center">
   <img src="docs/Fig/PL1.gif"
   alt="drawing"
-  style="width:100px;">
+  style="width:50px;">
 </p>
 
 Protein-ligand dissociation thermodynamics and kinetics analysis toolkit
