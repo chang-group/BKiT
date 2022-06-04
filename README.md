@@ -4,7 +4,9 @@
 </p>
 
 <p align="center">
-  <img src="docs/Fig/PL1.gif">
+  <img src="docs/Fig/PL1.gif"
+  alt="drawing"
+  style="width:200px;">
 </p>
 
 Protein-ligand dissociation thermodynamics and kinetics analysis toolkit
