@@ -3,7 +3,11 @@
   <img src="docs/Fig/logo.png">
 </p>
 
-Protein-ligand dissociation thermodynamics and kinetics toolkit
+<p align="center">
+  <img src="docs/Fig/PL1.gif">
+</p>
+
+Protein-ligand dissociation thermodynamics and kinetics analysis toolkit
 
 ## Dependancies
 - `python` 3.6 >
