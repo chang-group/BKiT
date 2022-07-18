@@ -100,7 +100,7 @@ def pathpatch_2d_to_3d(pathpatch, delta, normal = 'z'):
 
 
 
-def PlotSelected(dat_sel, dr, pathP, normals, yz_pad, figsize=[8,6]):
+def PlotSelected(dat_sel, dr, pathP, normals, yz_pad, figsize=[8,6], plotOrig=False):
     """
     
     """
@@ -118,10 +118,15 @@ def PlotSelected(dat_sel, dr, pathP, normals, yz_pad, figsize=[8,6]):
         c = Circle((0,0), dr, facecolor='grey', alpha=0.4)
         ax.add_patch(c)
         pathpatch_2d_to_3d(c, pathP[i], normal = normals[i])
+        ax.text(pathP[i,0], pathP[i,1] + dr, pathP[i,2] + 2*dr, str(i), 'x')
+    
 
-    #plot selected points
-    p = ax.scatter3D(dat_sel[:,0], dat_sel[:,1], dat_sel[:,2], c = dat_sel[:,3],
-                     alpha = 0.5, s = 2.8, cmap = 'prism')
+    if plotOrig:
+        p = ax.scatter3D(dat_sel[:,0], dat_sel[:,1], dat_sel[:,2], c = range(int(len(dat_sel))), alpha=0.1)
+    else:
+        #plot selected points
+        p = ax.scatter3D(dat_sel[:,0], dat_sel[:,1], dat_sel[:,2], c = dat_sel[:,3],
+                         alpha = 0.5, s = 2.8, cmap = 'prism')
 
     x_min, y_min, z_min = pathP.min(axis=0) 
     x_max, y_max, z_max = pathP.max(axis=0)

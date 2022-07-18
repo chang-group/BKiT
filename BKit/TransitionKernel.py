@@ -27,7 +27,8 @@ class TransitionKernel:
         """
         
         dt = 1
-        frameid = np.arange(0, self.T-dt)              # frame indx per trajectory
+        #frameid = np.arange(0, self.T-dt)             # frame indx per trajectory
+        frameid = np.arange(0, len(trajI)-dt)          # frame indx per trajectory
         transition = trajI[dt:] - trajI[:-dt]          # 1 step diff --> tells if crossing 
                                                        # happend within 1 time step (1000 md steps)
         frameid_trans = frameid[abs(transition) == 1] 
@@ -67,7 +68,7 @@ class TransitionKernel:
         return trans[1:], count_crossing
     
     
-    def AllTrans(self, cell_ids):
+    def AllTrans(self, cell_ids, frac=1.0):
         """
                 
         Parameters
@@ -88,7 +89,9 @@ class TransitionKernel:
         Ncross=0
         
         for i in range(0, ntraj, 1):
-            trajI = cell_ids[i*self.T:(i+1)*self.T]             
+            left = i * self.T
+            right = i * self.T + int(self.T *frac)
+            trajI = cell_ids[left:right]             
             trans_trajI, Icross = self.KernelPerTraj(i, trajI)
             TR = np.append(TR, trans_trajI, axis=0)
             Ncross+=Icross
@@ -102,7 +105,7 @@ class TransitionKernel:
         return TR[1:]
     
     
-    def Kmat_time(self, trans, nM):
+    def Kmat_time(self, trans, nM, norm=True):
         """
         transition matrix and mean first passage time....
         change!!!!!!!!!!!!!!!    
@@ -126,20 +129,25 @@ class TransitionKernel:
 
             if len(tmp) != 0: # if list is not empty
                 mfpt.append([i, tmp.mean(), tmp.std()])
-        
-        kmat = (kmat.T / kmat.sum(axis=1)).T
+
+        if norm:
+            kmat = (kmat.T / kmat.sum(axis=1)).T
+
         return kmat, mfpt
 
             
 if __name__=='__main__':
 
-    DIR_SAVE = '../output/'
+    DIR_SAVE = '../notebooks/output/'
     print("reading inputs from " + DIR_SAVE)
     MIDX = np.load(DIR_SAVE + 'CellIndx.npy')
     T = 1000
    
     TKernel = TransitionKernel(traj_size=T, OutCellID=1000, check_escape=True)
-    TRANS = TKernel.AllTrans(MIDX)#[0:10000])
-    print(TRANS)
-    
+
+    for i in range(10):
+        f = i*0.1
+        print('fraction -- ', f)
+        TRANS = TKernel.AllTrans(MIDX,frac=f)
+       
     
