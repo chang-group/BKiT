@@ -13,7 +13,7 @@ Protein-ligand dissociation thermodynamics and kinetics analysis toolkit
 
 Clone the repository:
 
-*git clone https://github.com/truzmeto/BKit.git*
+*git clone https://github.com/chang-group/BKiT.git*
 
 then run the following command:
 
@@ -21,4 +21,4 @@ then run the following command:
 
 ## Documentaion 
 
-https://truzmeto.github.io/BKit/
+https://truzmeto.github.io/BKiT/
