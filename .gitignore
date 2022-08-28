@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
-./output
+
+*.npy
+*.prmtop
 __pycache__/
 *.py[cod]
 *$py.class
