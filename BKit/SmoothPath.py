@@ -43,11 +43,31 @@ class BuildSmoothMeanPath:
          points = self.rm_sharp(path)
          return points
 
-    def GetPathKD(self, rad, w_size, stride):
+    def GetPathKD_ReOpt(self, dat, mean_path, rad, w_size, stride):
         """
         Construct path based on local neighbourhood distance
         """
                 
+        tree = KDTree(dat, leaf_size = 10) 
+        n_p = mean_path.shape[0]
+
+        points = []
+        for i in range(n_p):
+            selected_indx = tree.query_radius(mean_path[i:i+1], r=rad)[0]
+            if selected_indx.size != 0: 
+                sample = dat[selected_indx].mean(axis=0)  
+                points.append(sample)
+                       
+        points = np.array(points)
+        points = self.rm_sharp(points)
+
+        return points
+
+    def GetPathKD(self, rad, w_size, stride):
+        """
+        Construct path based on local neighbourhood distance
+        """
+        
         tree = KDTree(self.dat, leaf_size = 10) 
         mean_path = self.roll_ave( w_size, stride=stride)
         n_p = mean_path.shape[0]
