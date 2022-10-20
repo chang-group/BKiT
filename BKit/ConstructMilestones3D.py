@@ -62,7 +62,6 @@ class ConstructMilestones3D:
         Simply get angles (theta, phi -- spherical coordinate sys)
         """
         dr = self.GetVectors()
-        #print(dr[0:6])
         r = np.sqrt((dr*dr).sum(axis=1))
         angs = np.zeros(shape=(dr.shape[0],2))
         angs[:,0] = np.arccos(dr[:,2] / r)
@@ -209,7 +208,7 @@ class ConstructMilestones3D:
         if SortMethod == 'surface':
             for i in range(n_disks):
                 M = rotation_matrix(normals[i], z_hat) 
-                frame_ids = ConsMile.SelFrames(dat, pathP[i], M, dr = dr, dz = dz)
+                frame_ids = ConsMile.SelFrames(dat, pathP[i], M, dr = dr[i], dz = dz) #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 diskID = np.ones_like(frame_ids, dtype=int)*i
                 datS = np.append(datS, np.column_stack((dat[frame_ids], diskID, frame_ids)), axis=0)
             datS = datS[1:]
@@ -219,7 +218,7 @@ class ConstructMilestones3D:
                 Ml = rotation_matrix(normals[i], z_hat) 
                 Mm = rotation_matrix(normalsMid[i], z_hat)
                 Mr = rotation_matrix(normals[i+1], z_hat)
-                frame_ids = ConsMile.SelCells(dat, pathP[i], pathMid[i], pathP[i+1], Ml, Mm, Mr, dr=dr)
+                frame_ids = ConsMile.SelCells(dat, pathP[i], pathMid[i], pathP[i+1], Ml, Mm, Mr, dr=dr[i])
                 midIDs = np.ones_like(frame_ids, dtype=int)*i
                 datS = np.append(datS, np.column_stack((dat[frame_ids], midIDs, frame_ids)), axis=0)
             datS = datS[1:]
@@ -233,16 +232,15 @@ class ConstructMilestones3D:
 
 class SortFrames:
    
-    def __init__(self, dat, dr, dz):
+    def __init__(self, dat, dz):
         """
         
         """
         self.dat = dat
-        self.dr = dr
         self.dz = dz
                 
           
-    def SelFrames(self, ml_xyz, M):
+    def SelFrames(self, ml_xyz, M, dr):
         """
         Selects frames on a disk surface (both side) based on distances:
             dz - along disk normal
@@ -251,13 +249,13 @@ class SortFrames:
         """
         data = np.copy(self.dat) - ml_xyz                     # translate
         a = np.dot(data, M)                                   # rotate
-        a = a*a; dz = self.dz*self.dz; dr = self.dr*self.dr   # square        
+        a = a*a; dz = self.dz*self.dz; dr = dr*dr   # square        
         mask = (a[:,2] <= dz) & (a[:,1] + a[:,0] <= dr)
         indxs = np.where(mask)[0]
 
         return indxs
 
-    def SelCells(self, ml_xyzL, ml_xyzM, ml_xyzR, Ml, Mm, Mr):
+    def SelCells(self, ml_xyzL, ml_xyzM, ml_xyzR, dr, Ml, Mm, Mr):
         """
         Selects frames between two neighbouring milestone planes
         (aligned to milestone disk) and also sorts based on middle disk raduis:
@@ -275,14 +273,14 @@ class SortFrames:
         aR = np.dot(dataR, Mr)                # rotate
                
         maskZ = (aL[:,2] >= 0.0) & (aR[:,2] < 0.0)      # choose all points between plances 
-        maskR = aM[:,0]**2 + aM[:,1]**2 <= self.dr**2   # choose points within mid disk dr
+        maskR = aM[:,0]**2 + aM[:,1]**2 <= dr**2   # choose points within mid disk dr
         mask = maskZ * maskR                            # combine masks     
         
         indxs = np.where(mask)[0]
         
         return indxs
     
-    def SortAllPoints(self, normals, normalsMid, pathP, pathMid, SortMethod='surface'):
+    def SortAllPoints(self, normals, normalsMid, dr, pathP, pathMid, SortMethod='surface'):
         """
 
         """
@@ -299,7 +297,7 @@ class SortFrames:
         if SortMethod == 'surface':
             for i in range(n_disks):
                 M = rotation_matrix(normals[i], z_hat) 
-                frame_ids = self.SelFrames(pathP[i], M)
+                frame_ids = self.SelFrames(pathP[i], M, dr[i])
                 diskID = np.ones_like(frame_ids, dtype=int)*i
                 datS = np.append(datS, np.column_stack((self.dat[frame_ids], diskID, frame_ids)), axis=0)
             datS = datS[1:]
@@ -309,7 +307,7 @@ class SortFrames:
                 Ml = rotation_matrix(normals[i], z_hat) 
                 Mm = rotation_matrix(normalsMid[i], z_hat)
                 Mr = rotation_matrix(normals[i+1], z_hat)
-                frame_ids = self.SelCells(pathP[i], pathMid[i], pathP[i+1], Ml, Mm, Mr)
+                frame_ids = self.SelCells(pathP[i], pathMid[i], pathP[i+1], dr[i], Ml, Mm, Mr)
                 midIDs = np.ones_like(frame_ids, dtype=int)*i
                 datS = np.append(datS, np.column_stack((self.dat[frame_ids], midIDs, frame_ids)), axis=0)
                 CellIndx[frame_ids] = i
