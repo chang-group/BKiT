@@ -153,81 +153,6 @@ class ConstructMilestones3D:
         return theta[1:len(theta)-1], phi[1:len(phi)-1]
   
     
-    def SelFrames(self, dat, ml_xyz, M, dr, dz):
-        """
-        Selects frames on a disk surface (both side) based on distances:
-            dz - along disk normal
-            dr - along radial direction
-            
-        """
-
-        data = np.copy(dat) - ml_xyz    # translate
-        a = np.dot(data, M)             # rotate
-        a = a*a; dz = dz*dz; dr = dr*dr # square        
-  
-        mask = (a[:,2] <= dz) & (a[:,1] + a[:,0] <= dr)
-        indxs = np.where(mask)[0]
-        
-        return indxs
-
-    def SelCells(self, dat, ml_xyzL, ml_xyzM, ml_xyzR, Ml, Mm, Mr, dr):
-        """
-        Selects frames between two neighbouring milestone planes (aligned to milestone disk)
-        and also sorts based on middle disk raduis:
-        dz - along disk normal
-        dr - along radial direction
-            
-        """
-        dataL = np.copy(dat) - ml_xyzL   # translate left disk and dat with it
-        aL = np.dot(dataL, Ml)           # rotate
-        
-        dataM = np.copy(dat) - ml_xyzL   
-        aM = np.dot(dataM, Mm)           
-              
-        dataR = np.copy(dat) - ml_xyzR   # translate ...
-        aR = np.dot(dataR, Mr)           # rotate
-               
-        maskZ = (aL[:,2] >= 0.0) & (aR[:,2] < 0.0) # choose all points between plances 
-        maskR = aM[:,0]**2 + aM[:,1]**2 <= dr**2   # choose points within mid disk dr
-        mask = maskZ * maskR                       # combine masks     
-        
-        indxs = np.where(mask)[0]
-        
-        return indxs
-    
-    def SortAllPoints(self, dat, normals, normalsMid, pathP, pathMid, dr, dz, SortMethod='surface'):
-        """
-
-        """
-
-        n_disks = normals.shape[0]
-        n_cells = normalsMid.shape[0]
-        z_hat = (0, 0, 1)             # unit vecor along z
-        datS = np.zeros((1,5))        # empty df for appending
-
-        if SortMethod == 'surface':
-            for i in range(n_disks):
-                M = rotation_matrix(normals[i], z_hat) 
-                frame_ids = ConsMile.SelFrames(dat, pathP[i], M, dr = dr[i], dz = dz) #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                diskID = np.ones_like(frame_ids, dtype=int)*i
-                datS = np.append(datS, np.column_stack((dat[frame_ids], diskID, frame_ids)), axis=0)
-            datS = datS[1:]
-
-        elif SortMethod == 'middle':
-            for i in range(n_cells):
-                Ml = rotation_matrix(normals[i], z_hat) 
-                Mm = rotation_matrix(normalsMid[i], z_hat)
-                Mr = rotation_matrix(normals[i+1], z_hat)
-                frame_ids = ConsMile.SelCells(dat, pathP[i], pathMid[i], pathP[i+1], Ml, Mm, Mr, dr=dr[i])
-                midIDs = np.ones_like(frame_ids, dtype=int)*i
-                datS = np.append(datS, np.column_stack((dat[frame_ids], midIDs, frame_ids)), axis=0)
-            datS = datS[1:]
-
-        else:
-            print('Specify one of the available methods to sort data points!')
-
-        return datS
-
 
 
 class SortFrames:
@@ -325,95 +250,56 @@ class SortFrames:
     
 if __name__=='__main__':
        
-    #from SmoothPath import BuildReactPath, Generate3Data
-    #from InterpolateCurve import InterpolatePath
+    from Utils import Generate3Data, Generate2Data, pathpatch_2d_to_3d
+    from BKit import BuildSmoothMeanPath 
+    from BKit import InterpolatePath
 
-    dim = 3
-    n_points = 10000
-    seed = 10
-    n_bins = 20
-    pd = 0.6
-    ml_length = .6
-    rad = 1.2
-    n_iter = 500
-    plot_cellP = True
+    plot2D = True
+    w_size = 100
+    stride = 20
+    n_points = 500
+    dr = .8
+    alpha = .5
+    fs = 12 
+        
+    if plot2D:
+        dat = Generate2Data(n_points)
+    else:
+        dat = Generate3Data(n_points)
+        
+    ReactPath = BuildSmoothMeanPath(dat, w_size=w_size, stride=stride)    
+    points = ReactPath.GetPath()
     
-    dat = Generate3Data(n_points)
-    ReactPath = BuildReactPath(dat, n_bins=n_bins, n_samples=2, w_size=5, dim=dim)   
-    points = ReactPath.GetReactPath(rseed=seed)
+    ConsMile = ConstructMilestones3D(points)
+    vecs = ConsMile.GetVectors()
+    normals = ConsMile.OptVectors(vecs, n_iter=1000, lr=0.01)
+
+    n_disks = normals.shape[0]
+    rad = np.ones(n_disks)*dr
     
-    pathAll = InterpolatePath(points, pair_dist=ml_length/2, dim=dim, kind='linear')
-    mp = pathAll.shape[0]
-    midID = [i for i in range(1,mp-1,2)]
-    pID = [i for i in range(0,mp,2)] 
-    pathMid = pathAll[midID]    
-    pathP = pathAll[pID]    
-   
-    # construct 3D milestones (disks)
-    ConsMile = ConstructMilestones3D(pathAll)#, ml_length = ml_length/2)
-    angles = ConsMile.GetAngles()
-    #angles = np.array(angles)
-    angles = ConsMile.OptAngles(angles, n_iter=n_iter)
-    #print(angles.shape)
+    fig = plt.figure(figsize = [8,6])
+    
+    if plot2D:
+        plt.plot(dat[:,0], dat[:,1], ls = '', marker = 'o', markersize = 4)
+        plt.plot(points[:,0], points[:,1], ls = '-', marker = 'o', markersize = 4)
+    
+        plt.xlabel("PC1"); plt.ylabel("PC2")
+        plt.show()
       
-    U, V, W = ml_length*np.sin(angles[:,0])*np.cos(angles[:,1]), \
-              ml_length*np.sin(angles[:,0])*np.sin(angles[:,1]), \
-              ml_length*np.cos(angles[:,0])
-       
-
-    normalsAll = np.column_stack([U, V, W])
-    normals = normalsAll[pID]    
-    normalsMid = normalsAll[midID]
-    n_circle = normals.shape[0]
-    n_circleMid = normalsMid.shape[0]
-
-   
-    fig = plt.figure(figsize = [16,16])
-    ax = plt.axes(projection='3d')
-    #p = ax.scatter3D(dat[:,0], dat[:,1], dat[:,2], c = range(int(len(dat))), alpha=0.05)
-    #ax.plot3D(pathP[:,0], pathP[:,1], pathP[:,2], 'red', marker='o', markersize=0.5, alpha=0.3)
+    else:
     
-    SelIndx = []
-    for i in range(n_circle):
-        c = Circle((0,0), rad, facecolor='grey', alpha=0.4)
-        ax.add_patch(c)
-        M = rotation_matrix(normals[i], (0, 0, 1)) 
-        pathpatch_2d_to_3d(c, pathP[i], normal = normals[i])
-        S1 = ConsMile.SelFrames(dat, pathP[i], M, dr=1., dz=0.1)
-        dat1 = dat[S1]
-        if plot_cellP != True:
-            p = ax.scatter3D(dat1[:,0], dat1[:,1], dat1[:,2], alpha=0.5, s=1.8)
-     
-    #plot selected pints on each cell
-    if plot_cellP == True:
-        for i in range(1,n_circle+n_circleMid,2):
-            
-            Ml = rotation_matrix(normalsAll[i-1], (0, 0, 1)) 
-            Mm = rotation_matrix(normalsAll[i], (0, 0, 1))
-            Mr = rotation_matrix(normalsAll[i+1], (0, 0, 1))
-            
-            S2 = ConsMile.SelCells(dat, pathAll[i-1], pathAll[i], pathAll[i+1], Ml, Mm, Mr, dr=10*rad)
-            print('milestone' + str(i), S2)
-            datM1 = dat[S2] #select
-            p = ax.scatter3D(datM1[:,0], datM1[:,1], datM1[:,2], alpha=0.5, s=1.8)
-            #ml = np.ones_like(S2)*i
-            #datM1 = np.column_stack((datM1, ml)) #append mlid as column
+        ax = plt.axes(projection='3d')
+        p = ax.scatter3D(dat[:,0], dat[:,1], dat[:,2], c = range(int(len(dat))), alpha=0.2)
+        ax.plot3D(points[:,0], points[:,1], points[:,2], 'red', marker='o')
         
+        for i in range(n_disks):
+            c = Circle((0,0), rad[i], facecolor='grey', alpha=alpha)
+            ax.add_patch(c)
+            pathpatch_2d_to_3d(c, points[i], normal = normals[i])
         
-    #ax.quiver(pathP[:,0], pathP[:,1], pathP[:,2], U, V, W, color='magenta')
-    ax.set_xlabel('PC1'); ax.set_ylabel('PC2'); ax.set_zlabel('PC3') 
+        ax.set_xlabel('PC1'); ax.set_ylabel('PC2'); ax.set_zlabel('PC3') 
+        fig.colorbar(p, ax=ax)
+        plt.show()
     
-    x_min, y_min, z_min = pathP.min(axis=0) 
-    x_max, y_max, z_max = pathP.max(axis=0)
     
-    ax.set_xlim3d(x_min, x_max)
-    ax.set_ylim3d(y_min - 3, y_max + 3)
-    ax.set_zlim3d(z_min - 3, z_max + 3)
-            
-    ax.xaxis.pane.fill = False; ax.yaxis.pane.fill = False; ax.zaxis.pane.fill = False
     
-    #set color to white (or whatever is "invisible")
-    ax.xaxis.pane.set_edgecolor('w'); ax.yaxis.pane.set_edgecolor('w'); ax.zaxis.pane.set_edgecolor('w')
-    #ax.grid(False)
-    #fig.colorbar(p, ax=ax)
-    plt.show() 

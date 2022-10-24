@@ -146,77 +146,25 @@ class BuildSmoothMeanPath:
         return pnts
    
      
-def Generate2Data(n, x_max=12):
-    """
-    
-    """
-    
-    rand = np.random.rand(n)*2 - 1
-    
-    x1_max = x_max/5
-    x1 = np.arange(0, x1_max , x1_max/n)
-    y1 = 1.0*np.sin(.4*x1) + .2*rand
-
-    x2_max = x1_max + 0.6*x_max
-    x2 = np.arange(x1_max, x2_max, 0.6*x_max/n)
-    y2 = 1.0*np.sin(.4*x2 ) + .4*rand
-    
-    x3 = np.arange(x2_max, x_max, 0.2*x_max/n)
-    y3 = 1.0*np.cos(.4*x3 ) + .3*rand
-    
-    dat = np.concatenate([np.column_stack([x1,y1]),
-                          np.column_stack([x2,y2]),
-                          np.column_stack([x3,y3])])
-    
-    return dat
-    
-
-def Generate3Data(n, x_max=20.):
-    """
-    
-    """
-    
-    omega = 0.3
-    noiseA = 1.6
-    randY = (np.random.rand(n)*2 - 1) * noiseA
-    randZ = (np.random.rand(n)*2 - 1) * noiseA
-
-    x1_max = 0.2*x_max
-    x1 = np.arange(0, x1_max , x1_max/n) 
-    y1 = 1.5*np.sin(omega*x1) + randY
-    z1 = 1.5*np.cos(omega*x1) + randZ
-
-    x2_max = x1_max + 0.6*x_max
-    x2 = np.arange(x1_max, x2_max, 0.6*x_max/n) 
-    y2 = np.sin(omega*x2 ) + randY
-    z2 = np.cos(omega*x2 ) + randZ
-
-    
-    x3 = np.arange(x2_max, x_max, 0.2*x_max/n) 
-    y3 = 2.5*np.sin(omega*x3 ) + randY
-    z3 = 2.5*np.cos(omega*x3 ) + randZ
-
-    
-    dat = np.concatenate([np.column_stack([x1,y1,z1]),
-                          np.column_stack([x2,y2,z2]),
-                          np.column_stack([x3,y3,z3])])
-    
-    return dat
 
 if __name__=='__main__':
     
     plot2D = False
-    n_points = 200
+    n_points = 500
     seed = 10
+    w_size = 100
+    stride = 20
+
+    from Utils import Generate2Data, Generate3Data
 
     if plot2D:
         dat = Generate2Data(n_points)
     else:
         dat = Generate3Data(n_points)
 
-        
-    ReactPath = BuildSmoothMeanPath(dat, w_size=100, stride=40)    
-    points = ReactPath.GetPathKD(rad=1.0)
+    ReactPath = BuildSmoothMeanPath(dat, w_size=w_size, stride=stride)    
+    points = ReactPath.GetPath()
+    #points = ReactPath.GetPathKD(rad=1.0, w_size=w_size, stride=stride)
    
     
     fig = plt.figure(figsize = [8,6])
