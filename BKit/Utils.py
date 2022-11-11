@@ -3,7 +3,7 @@ import os
 import pytraj as pt
 import numpy as np
 import tqdm
-from ConstructMilestones3D import rotation_matrix
+from .ConstructMilestones3D import rotation_matrix
 
 # for plotting
 import matplotlib.pyplot as plt
