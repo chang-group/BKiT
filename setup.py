@@ -9,7 +9,7 @@ if __name__=='__main__':
 	setup(	name='BKit',
 		version="0.1",
 		packages = Packages,
-		author="Talant Ruzmetov, ..." ,
+		author="Talant Ruzmetov" ,
 		author_email="talantruzmetov@gmail.com",
 		description="This is accurate free energy calculation toolkit to charactirize molecular transition",
 		license="MIT",
