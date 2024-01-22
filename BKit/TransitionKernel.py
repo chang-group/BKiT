@@ -10,19 +10,31 @@ class TransitionKernel:
         self.T = traj_size
         self.outID = OutCellID
         self.check_escape = check_escape
-    
+
+        
     def KernelPerTraj(self, trajID, trajI):
         """
                 
+        General method to count transitions: All transitions between
+        neighbouring milestones are considered.
+        
+          
         Parameters
-        ----------
-         : TYPE
-            DESCRIPTION.
+        -------
+        trajID : TYPE -- int
+            Short MD trajectory index
+
+        trajI : np.array(shape=(traj size), int) 
+            state labels per trajectory
 
         Returns
         -------
-        transI : TYPE
-            DESCRIPTION.
+        trans : np.array(shape=(number of transitions, 5), int) 
+            Short MD trajectory index
+        
+        count_crossing : TYPE -- int
+            total number of transions per short MD
+
 
         """
         
@@ -67,8 +79,71 @@ class TransitionKernel:
 
         return trans[1:], count_crossing
     
+
+    def KernelPerTrajS(self,trajID, trajI):
+        """
+        Strict method to count transitions: Only local neareast neighbour
+        transitions are allowed. Trajectory with conformations starting
+        outside the path are ignored. Part of the trajectory after jump is also
+        ignored. Conformations that return to same spot in milestone is believed to
+        be a different conformation due to accounting for a few PC components. 
+          
+        Parameters
+        -------
+        trajID : TYPE -- int
+            Short MD trajectory index
+
+        trajI : np.array(shape=(traj size), int) 
+            state labels per trajectory
+
+        Returns
+        -------
+        trans : np.array(shape=(number of transitions, 5), int) 
+            Short MD trajectory index
+        
+        count_crossing : TYPE -- int
+            total number of transions per short MD
+
+        """
+
+        
+        check_escape = True
+        dt = 1
+        frameid = np.arange(0, len(trajI)-dt)          # frame indx per trajectory
+        transition = trajI[dt:] - trajI[:-dt]          # 1 step diff --> tells if crossing 
+                                                       # happend within 1 time step (1000 md steps)
+        frameid_trans = frameid[abs(transition) == 1] 
+        milestone = np.max(np.array([trajI[frameid_trans], trajI[frameid_trans + 1]]).T, axis=1) 
+        
+        trans = np.zeros((1,5), dtype=int)
+        count_crossing = 0
+        
+        if len(milestone) > 0 :
+            m_ini, t_ini = milestone[0], frameid_trans[0]
+
+            for i in range(len(milestone)-1):
     
-    def AllTrans(self, cell_ids, frac=1.0):
+                if (abs(milestone[i+1] - milestone[i]) == 1):
+                    m_end, t_end = milestone[i+1], frameid_trans[i+1]
+                    
+                    if check_escape:
+                        escape = (np.any(trajI[t_ini:t_end] == 1000))
+                    else:
+                        escape = False
+
+                    if escape == False:                  
+                        tmp = np.array([trajID, m_ini, m_end, t_ini, t_end], dtype=int).reshape(1,5)
+                        trans = np.append(trans, tmp, axis=0)
+                        count_crossing += 1
+                        m_ini, t_ini = m_end, t_end
+                                         
+                else:
+                    continue
+
+        return trans[1:], count_crossing
+
+    
+    def AllTrans(self, cell_ids, frac=1.0, count_method='orig'):
         """
                 
         Parameters
@@ -92,17 +167,25 @@ class TransitionKernel:
             left = i * self.T
             right = i * self.T + int(self.T *frac)
             trajI = cell_ids[left:right]             
-            trans_trajI, Icross = self.KernelPerTraj(i, trajI)
-            TR = np.append(TR, trans_trajI, axis=0)
-            Ncross+=Icross
-            
+
+            if count_method == 'orig':
+                trans_trajI, Icross = self.KernelPerTraj(i, trajI)
+                TR = np.append(TR, trans_trajI, axis=0)
+                Ncross += Icross
+            elif count_method == 'strict':
+                trans_trajI, Icross = self.KernelPerTrajS(i, trajI)
+                TR = np.append(TR, trans_trajI, axis=0)
+                Ncross += Icross
+            else:
+                pass
+                
         #if len(milestone) < 1:
         #    raise ValueError('Trajectory ' + str(trajID) + ' missing transitions! ' +
         #                     'It results in incorrect Free E calculation! ' + 
         #                     'Consider changing transition path.')
         
         print('Total transitions = ', Ncross)
-        return TR[1:]
+        return TR[1:], Ncross
     
     
     def Kmat_time(self, trans, nM, norm=True):
