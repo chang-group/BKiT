@@ -45,7 +45,6 @@ class TransitionKernel:
                                                        # happend within 1 time step (1000 md steps)
         frameid_trans = frameid[abs(transition) == 1] 
         milestone = np.max(np.array([trajI[frameid_trans], trajI[frameid_trans + 1]]).T, axis=1) 
-        # Using np.max in here is incorrect! It skips some backward transitions! 
         
         trans = np.zeros((1,5), dtype=int)
         count_crossing = 0
@@ -127,7 +126,7 @@ class TransitionKernel:
                     m_end, t_end = milestone[i+1], frameid_trans[i+1]
                     
                     if check_escape:
-                        escape = (np.any(trajI[t_ini:t_end] == 1000))
+                        escape = (np.any(trajI[t_ini:t_end] ==  self.outID))
                     else:
                         escape = False
 
@@ -172,7 +171,7 @@ class TransitionKernel:
                 trans_trajI, Icross = self.KernelPerTraj(i, trajI)
                 TR = np.append(TR, trans_trajI, axis=0)
                 Ncross += Icross
-            elif count_method == 'strict':
+            elif (count_method == 'strict') & (trajI[0] !=  self.outID):
                 trans_trajI, Icross = self.KernelPerTrajS(i, trajI)
                 TR = np.append(TR, trans_trajI, axis=0)
                 Ncross += Icross
@@ -191,7 +190,6 @@ class TransitionKernel:
     def Kmat_time(self, trans, nM, norm=True):
         """
         transition matrix and mean first passage time....
-        change!!!!!!!!!!!!!!!    
     
         """
         kmat = np.zeros((nM,nM), dtype=int)
