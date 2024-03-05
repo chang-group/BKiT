@@ -124,6 +124,9 @@ class TransitionKernel:
     
                 if (abs(milestone[i+1] - milestone[i]) == 1):
                     m_end, t_end = milestone[i+1], frameid_trans[i+1]
+
+                    if m_ini != milestone[i]:
+                        m_ini,t_ini = milestone[i],frameid_trans[i]
                     
                     if check_escape:
                         escape = (np.any(trajI[t_ini:t_end] ==  self.outID))
