@@ -106,7 +106,7 @@ class TransitionKernel:
         """
 
         
-        check_escape = True
+        check_escape = self.check_escape
         dt = 1
         frameid = np.arange(0, len(trajI)-dt)          # frame indx per trajectory
         transition = trajI[dt:] - trajI[:-dt]          # 1 step diff --> tells if crossing 
@@ -138,6 +138,8 @@ class TransitionKernel:
                         trans = np.append(trans, tmp, axis=0)
                         count_crossing += 1
                         m_ini, t_ini = m_end, t_end
+                    else:
+                        break # break out of the loop if escape happens at all
                                          
                 else:
                     continue
