@@ -7,5 +7,6 @@ from .InterpolateCurve import InterpolatePath
 from .ConstructMilestones3D import rotation_matrix
 from .ConstructMilestones3D import ConstructMilestones3D
 from .ConstructMilestones3D import SortFrames
+from .ConstructMilestones1D import StateLabels_1D
 from .TransitionKernel import TransitionKernel
 from .KinSolvers import KineticsQK
