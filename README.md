@@ -6,8 +6,10 @@ Binding Kinetic Toolkit (BKiT) is an open-source, comprehensive post-molecular d
 
 <h2>Functions</h2>
 1. PostMD_Analysis.ipynb
+&nbsp;&nbsp;&nbsp;&nbsp;This notebook includes visualization 
 2. PMF_Calculations_1D_RMSD.ipynb
 3. 2D_PC_Milestoning_Generate.ipynb
 4. PMF_Calculation_2D_PC.ipynb
 <h2>Installation</h2>
 git clone https://github.com/chang-group/BKiT
+Dependencies are listed in each notebook
